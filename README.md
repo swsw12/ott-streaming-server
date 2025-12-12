@@ -34,14 +34,28 @@ psql -U ott -d ott_streaming -f sql/schema.sql
 docker-compose up -d
 ```
 
-### 2. 서버 빌드
+### 2. PostgreSQL 개발 라이브러리 설정
+
+PostgreSQL 설치 폴더에서 다음 파일들을 프로젝트 폴더에 복사:
+
+```
+C:\Program Files\PostgreSQL\15\lib\libpq.lib  → 프로젝트 폴더
+C:\Program Files\PostgreSQL\15\bin\libpq.dll  → 프로젝트 폴더
+C:\Program Files\PostgreSQL\15\bin\libssl-3-x64.dll  → 프로젝트 폴더
+C:\Program Files\PostgreSQL\15\bin\libcrypto-3-x64.dll  → 프로젝트 폴더
+C:\Program Files\PostgreSQL\15\bin\libiconv-2.dll  → 프로젝트 폴더
+C:\Program Files\PostgreSQL\15\bin\libintl-9.dll  → 프로젝트 폴더
+C:\Program Files\PostgreSQL\15\bin\libwinpthread-1.dll  → 프로젝트 폴더
+```
+
+### 3. 서버 빌드
 
 ```bash
 # Visual Studio Developer Command Prompt에서 실행
 build_vs.bat
 ```
 
-### 3. 서버 실행
+### 4. 서버 실행
 
 ```bash
 ott_server.exe

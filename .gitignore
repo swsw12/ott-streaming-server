@@ -47,5 +47,6 @@ exam/
 sync_db.py
 
 # IDE
+.vs/
 .vscode/
 .idea/
