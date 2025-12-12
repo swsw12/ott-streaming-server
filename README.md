@@ -75,7 +75,3 @@ Database: ott_streaming
 User: ott
 Password: ott123
 ```
-
----
-
-📄 **[개발 보고서 보기 (DEVELOPMENT_REPORT.md)](DEVELOPMENT_REPORT.md)**
