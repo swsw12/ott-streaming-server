@@ -16,11 +16,22 @@ C언어로 구현한 비디오 스트리밍 서버입니다.
 [PostgreSQL 다운로드](https://www.postgresql.org/download/windows/)에서 설치 후:
 
 ```bash
-# 데이터베이스 생성
-createdb -U postgres ott_streaming
+# 1. PostgreSQL 접속
+psql -U postgres
 
-# 스키마 적용
-psql -U postgres -d ott_streaming -f sql/schema.sql
+# 2. 사용자 및 데이터베이스 생성 (psql 안에서 실행)
+CREATE USER ott WITH PASSWORD 'ott123';
+CREATE DATABASE ott_streaming OWNER ott;
+\q
+
+# 3. 스키마 적용
+psql -U ott -d ott_streaming -f sql/schema.sql
+# (비밀번호 입력: ott123)
+```
+
+**또는 Docker 사용 (더 간단):**
+```bash
+docker-compose up -d
 ```
 
 ### 2. 서버 빌드
