@@ -507,11 +507,19 @@ int history_update(int user_id, int video_id, int position) {
 2. admin / admin123 입력
 3. 결과: 비디오 목록 페이지로 이동
 
+![로그인 화면](screenshots/login.png)
+
+### 비디오 목록 화면
+
+![비디오 목록](screenshots/list.png)
+
 ### 비디오 스트리밍 테스트
 1. 비디오 클릭
 2. 재생 시작 확인
 3. 중간 지점으로 탐색
 4. 결과: 정상 재생
+
+![비디오 재생](screenshots/player.png)
 
 ### 이어보기 테스트
 1. 비디오 30초 지점까지 시청
@@ -519,13 +527,15 @@ int history_update(int user_id, int video_id, int position) {
 3. 재접속 후 같은 비디오 선택
 4. 결과: 30초 지점부터 재생
 
+### 회원가입 테스트
+
+![회원가입](screenshots/register.png)
+
 ---
 
 # 5. 팀원 담당 업무 및 기여도
 
-| 이름 | 담당 업무 | 기여도 |
-|------|-----------|--------|
-| (이름) | 전체 설계 및 구현 | 100% |
+혼자서 진행하였습니다!
 
 **상세 업무**:
 - 시스템 아키텍처 설계
