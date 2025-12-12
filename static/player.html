@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비디오 플레이어 - OTT 스트리밍</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="player-container">
+        <!-- Header -->
+        <header class="player-header">
+            <a href="/list.html" class="back-btn">← 목록으로</a>
+            <h1 id="video-title" class="player-title">로딩 중...</h1>
+            <div class="header-spacer"></div>
+        </header>
+
+        <!-- Video Player -->
+        <div class="player-wrapper">
+            <video id="video-player" controls autoplay>
+                <source id="video-source" src="" type="video/mp4">
+                브라우저가 비디오 재생을 지원하지 않습니다.
+            </video>
+        </div>
+
+        <!-- Video Controls -->
+        <div class="player-controls">
+            <div class="control-row">
+                <span id="current-time">0:00</span>
+                <input type="range" id="seek-bar" class="seek-bar" value="0" min="0" max="100">
+                <span id="duration">0:00</span>
+            </div>
+
+            <div class="control-row">
+                <div class="jump-buttons">
+                    <button class="btn btn-sm" onclick="jumpTo(-30)">-30초</button>
+                    <button class="btn btn-sm" onclick="jumpTo(-10)">-10초</button>
+                    <button class="btn btn-sm" onclick="jumpTo(10)">+10초</button>
+                    <button class="btn btn-sm" onclick="jumpTo(30)">+30초</button>
+                </div>
+
+                <div class="position-controls">
+                    <label>특정 위치로 이동:</label>
+                    <input type="number" id="jump-minutes" placeholder="분" min="0" class="time-input">
+                    <span>:</span>
+                    <input type="number" id="jump-seconds" placeholder="초" min="0" max="59" class="time-input">
+                    <button class="btn btn-primary btn-sm" onclick="jumpToPosition()">이동</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume Modal -->
+        <div id="resume-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h2>이어보기</h2>
+                <p id="resume-message">이전에 시청하던 위치가 있습니다.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" onclick="resumePlayback()">이어보기</button>
+                    <button class="btn btn-secondary" onclick="startFromBeginning()">처음부터</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let videoId = null;
+        let lastSavedPosition = 0;
+        let saveInterval = null;
+        let resumePosition = 0;
+
+        const video = document.getElementById('video-player');
+        const seekBar = document.getElementById('seek-bar');
+
+        // Get video ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        videoId = parseInt(urlParams.get('id'));
+        const startParam = parseInt(urlParams.get('start')) || 0;
+
+        if (!videoId) {
+            alert('비디오 ID가 필요합니다.');
+            window.location.href = '/list.html';
+        }
+
+        // Load video info
+        async function loadVideoInfo() {
+            try {
+                const response = await fetch(`/api/videos/${videoId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load video');
+                }
+
+                const videoInfo = await response.json();
+                document.getElementById('video-title').textContent = videoInfo.title;
+                document.title = videoInfo.title + ' - OTT 스트리밍';
+
+                // Set video source
+                document.getElementById('video-source').src = `/video/${videoId}`;
+                video.load();
+
+                // Check for resume position
+                if (startParam > 0) {
+                    // Start from URL parameter
+                    resumePosition = startParam;
+                    video.addEventListener('loadedmetadata', function () {
+                        video.currentTime = startParam;
+                    }, { once: true });
+                } else if (videoInfo.last_pos > 0) {
+                    // Show resume modal
+                    resumePosition = videoInfo.last_pos;
+                    showResumeModal(videoInfo.last_pos, videoInfo.duration);
+                }
+
+            } catch (error) {
+                console.error('Failed to load video:', error);
+                alert('비디오를 불러오는데 실패했습니다.');
+                window.location.href = '/list.html';
+            }
+        }
+
+        function showResumeModal(position, duration) {
+            const modal = document.getElementById('resume-modal');
+            const message = document.getElementById('resume-message');
+            message.textContent = `이전 시청 위치: ${formatDuration(position)} / ${formatDuration(duration)}`;
+            modal.style.display = 'flex';
+            video.pause();
+        }
+
+        function resumePlayback() {
+            document.getElementById('resume-modal').style.display = 'none';
+            video.currentTime = resumePosition;
+            video.play();
+        }
+
+        function startFromBeginning() {
+            document.getElementById('resume-modal').style.display = 'none';
+            video.currentTime = 0;
+            video.play();
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds) return '0:00';
+            seconds = Math.floor(seconds);
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+
+            if (h > 0) {
+                return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // Update time display and seek bar
+        video.addEventListener('timeupdate', function () {
+            document.getElementById('current-time').textContent = formatDuration(video.currentTime);
+
+            if (video.duration) {
+                const progress = (video.currentTime / video.duration) * 100;
+                seekBar.value = progress;
+            }
+        });
+
+        video.addEventListener('loadedmetadata', function () {
+            document.getElementById('duration').textContent = formatDuration(video.duration);
+            seekBar.max = 100;
+        });
+
+        // Seek bar interaction
+        seekBar.addEventListener('input', function () {
+            if (video.duration) {
+                const seekTime = (seekBar.value / 100) * video.duration;
+                video.currentTime = seekTime;
+            }
+        });
+
+        // Jump functions
+        function jumpTo(seconds) {
+            video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
+        }
+
+        function jumpToPosition() {
+            const minutes = parseInt(document.getElementById('jump-minutes').value) || 0;
+            const seconds = parseInt(document.getElementById('jump-seconds').value) || 0;
+            const targetTime = minutes * 60 + seconds;
+
+            if (targetTime >= 0 && targetTime <= video.duration) {
+                video.currentTime = targetTime;
+            } else {
+                alert('유효한 시간을 입력해주세요.');
+            }
+        }
+
+        // Save watch position every 15 seconds
+        async function savePosition() {
+            if (!video.paused && video.currentTime > 0) {
+                const currentPos = Math.floor(video.currentTime);
+
+                // Only save if position changed significantly
+                if (Math.abs(currentPos - lastSavedPosition) >= 5) {
+                    try {
+                        await fetch(`/api/history/${videoId}?position=${currentPos}`, {
+                            method: 'POST'
+                        });
+                        lastSavedPosition = currentPos;
+                        console.log('Position saved:', currentPos);
+                    } catch (error) {
+                        console.error('Failed to save position:', error);
+                    }
+                }
+            }
+        }
+
+        // Start save interval when playing
+        video.addEventListener('play', function () {
+            if (!saveInterval) {
+                saveInterval = setInterval(savePosition, 15000);
+            }
+        });
+
+        // Save position on pause
+        video.addEventListener('pause', function () {
+            savePosition();
+        });
+
+        // Save position before leaving
+        window.addEventListener('beforeunload', function () {
+            if (video.currentTime > 0) {
+                // Synchronous save
+                const currentPos = Math.floor(video.currentTime);
+                navigator.sendBeacon(`/api/history/${videoId}?position=${currentPos}`, '');
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('unload', function () {
+            if (saveInterval) {
+                clearInterval(saveInterval);
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function (e) {
+            if (e.target.tagName === 'INPUT') return;
+
+            switch (e.key) {
+                case ' ':
+                case 'k':
+                    e.preventDefault();
+                    if (video.paused) video.play();
+                    else video.pause();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    jumpTo(-10);
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    jumpTo(10);
+                    break;
+                case 'j':
+                    jumpTo(-10);
+                    break;
+                case 'l':
+                    jumpTo(10);
+                    break;
+                case 'f':
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        video.requestFullscreen();
+                    }
+                    break;
+            }
+        });
+
+        // Initialize
+        loadVideoInfo();
+    </script>
+</body>
+
+</html>

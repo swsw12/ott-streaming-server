@@ -1,0 +1,51 @@
+# Binaries and Build Artifacts
+*.exe
+*.obj
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.exp
+
+# PostgreSQL (users install separately)
+pgsql/
+pgsql_bin.zip
+
+# FFmpeg (users install separately)
+ffmpeg.exe
+ffplay.exe
+ffprobe.exe
+
+# Curl (not needed)
+curl-*/
+curl_bin.zip
+
+# Video files (too large, add your own)
+videos/*.mp4
+
+# Thumbnails (auto-generated)
+static/thumbnails/*.jpg
+
+# Logs
+*.log
+
+# Data files
+data/
+
+# Test files (temporary debugging)
+test_*.py
+test_*.c
+verify_*.c
+verify_*.bat
+check_*.py
+extract_*.py
+hash_*.txt
+
+# Legacy/unused
+REPORT.md
+exam/
+sync_db.py
+
+# IDE
+.vscode/
+.idea/

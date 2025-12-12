@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - OTT 스트리밍</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>🎬 OTT 스트리밍</h1>
+                <p>로그인하여 시작하세요</p>
+            </div>
+
+            <div id="error-message" class="error-message" style="display: none;"></div>
+
+            <form id="login-form" action="/login" method="POST">
+                <div class="form-group">
+                    <label for="username">아이디</label>
+                    <input type="text" id="username" name="username" placeholder="아이디를 입력하세요" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">로그인</button>
+            </form>
+
+            <div class="login-footer">
+                <p>계정이 없으신가요? <a href="/register.html">회원가입</a></p>
+                <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
+                    <p style="margin-bottom: 5px;">테스트 계정</p>
+                    <ul class="test-accounts">
+                        <li><strong>admin</strong> / admin123</li>
+                        <li><strong>user1</strong> / password</li>
+                        <li><strong>test</strong> / test</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check for error in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+
+        if (error) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'block';
+
+            if (error === 'missing') {
+                errorDiv.textContent = '아이디와 비밀번호를 입력해주세요.';
+            } else if (error === 'invalid') {
+                errorDiv.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+            }
+
+            const registered = urlParams.get('registered');
+            if (registered === 'true') {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.style.display = 'block';
+                errorDiv.style.backgroundColor = '#d4edda';
+                errorDiv.style.color = '#155724';
+                errorDiv.style.borderColor = '#c3e6cb';
+                errorDiv.textContent = '회원가입이 완료되었습니다. 로그인해주세요.';
+            } else {
+                errorDiv.textContent = '로그인에 실패했습니다.';
+            }
+        }
+    </script>
+</body>
+
+</html>

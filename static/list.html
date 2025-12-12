@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비디오 목록 - OTT 스트리밍</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo">🎬 OTT 스트리밍</h1>
+            </div>
+            <div class="header-right">
+                <span id="user-name" class="user-name"></span>
+                <a href="/logout" class="btn btn-outline">로그아웃</a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Continue Watching Section -->
+            <section id="continue-section" class="video-section" style="display: none;">
+                <h2 class="section-title">📌 이어보기</h2>
+                <div id="continue-list" class="video-grid"></div>
+            </section>
+
+            <!-- All Videos Section -->
+            <section class="video-section">
+                <h2 class="section-title">📽️ 전체 비디오</h2>
+                <div id="video-list" class="video-grid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>비디오 목록을 불러오는 중...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2024 OTT 스트리밍 서비스 - C 기반 멀티스레드 서버</p>
+        </footer>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        // Load videos on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            loadUser();
+            loadVideos();
+        });
+
+        async function loadUser() {
+            try {
+                const response = await fetch('/api/user');
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('user-name').textContent = user.username + '님';
+                }
+            } catch (error) {
+                console.error('Failed to load user:', error);
+            }
+        }
+
+        async function loadVideos() {
+            try {
+                const response = await fetch('/api/videos');
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/login.html';
+                        return;
+                    }
+                    throw new Error('Failed to fetch videos');
+                }
+
+                const videos = await response.json();
+
+                // Separate continue watching
+                const continueWatching = videos.filter(v => v.last_pos > 0);
+                const allVideos = videos;
+
+                // Render continue watching
+                if (continueWatching.length > 0) {
+                    document.getElementById('continue-section').style.display = 'block';
+                    renderVideos(continueWatching, 'continue-list', true);
+                }
+
+                // Render all videos
+                renderVideos(allVideos, 'video-list', false);
+
+            } catch (error) {
+                console.error('Failed to load videos:', error);
+                document.getElementById('video-list').innerHTML =
+                    '<p class="error">비디오를 불러오는데 실패했습니다.</p>';
+            }
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds) return '--:--';
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+
+            if (h > 0) {
+                return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function calculateProgress(lastPos, duration) {
+            if (!duration || !lastPos) return 0;
+            return Math.min(100, (lastPos / duration) * 100);
+        }
+
+        function renderVideos(videos, containerId, showProgress) {
+            const container = document.getElementById(containerId);
+
+            if (videos.length === 0) {
+                container.innerHTML = '<p class="empty-message">비디오가 없습니다.</p>';
+                return;
+            }
+
+            container.innerHTML = videos.map(video => {
+                const progress = calculateProgress(video.last_pos, video.duration);
+                const progressBar = showProgress && video.last_pos > 0
+                    ? `<div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>`
+                    : '';
+
+                const continueBtn = video.last_pos > 0
+                    ? `<a href="/player.html?id=${video.id}&start=${video.last_pos}" class="btn btn-secondary btn-sm">이어보기 (${formatDuration(video.last_pos)})</a>`
+                    : '';
+
+                return `
+                    <div class="video-card">
+                        <div class="video-thumbnail">
+                            <img src="/${video.thumbnail}" alt="${video.title}" 
+                                 onerror="this.src='/thumbnails/default.jpg'">
+                            <span class="video-duration">${formatDuration(video.duration)}</span>
+                            ${progressBar}
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">${video.title}</h3>
+                            <div class="video-actions">
+                                <a href="/player.html?id=${video.id}" class="btn btn-primary btn-sm">
+                                    ▶ 처음부터
+                                </a>
+                                ${continueBtn}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+
+</html>
