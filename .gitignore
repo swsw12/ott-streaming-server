@@ -1,11 +1,12 @@
 # Binaries and Build Artifacts
 *.exe
 *.obj
-*.dll
-*.lib
 *.pdb
 *.ilk
 *.exp
+
+# Keep PostgreSQL libraries (needed for build)
+# libpq.lib, libpq.dll, etc. are NOT ignored
 
 # PostgreSQL (users install separately)
 pgsql/
