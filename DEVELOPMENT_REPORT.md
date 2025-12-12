@@ -502,6 +502,13 @@ int history_update(int user_id, int video_id, int position) {
 
 ## 4.2 테스트 상세
 
+### 회원가입 테스트
+1. 브라우저에서 `http://localhost:8080/register.html` 접속
+2. 새 계정 정보 입력
+3. 결과: 로그인 페이지로 이동
+
+![회원가입](screenshots/register.png)
+
 ### 로그인 테스트
 1. 브라우저에서 `http://localhost:8080` 접속
 2. admin / admin123 입력
@@ -510,6 +517,8 @@ int history_update(int user_id, int video_id, int position) {
 ![로그인 화면](screenshots/login.png)
 
 ### 비디오 목록 화면
+1. 로그인 후 비디오 목록 확인
+2. 썸네일, 제목, 재생시간 표시
 
 ![비디오 목록](screenshots/list.png)
 
@@ -526,10 +535,6 @@ int history_update(int user_id, int video_id, int position) {
 2. 브라우저 종료
 3. 재접속 후 같은 비디오 선택
 4. 결과: 30초 지점부터 재생
-
-### 회원가입 테스트
-
-![회원가입](screenshots/register.png)
 
 ---
 
