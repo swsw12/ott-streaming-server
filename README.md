@@ -2,6 +2,10 @@
 
 C언어로 구현한 HTTP 비디오 스트리밍 서버
 
+📄 **[개발 보고서 보기](DEVELOPMENT_REPORT.md)**
+
+---
+
 ## 요구사항
 
 - Windows 10/11
